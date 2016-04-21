@@ -32,7 +32,7 @@ from StringIO import StringIO
 
 class Register(BaseRegister):
     def __init__(self, read_only, pointName, units, default_value):
-        super(Register, self).__init__("byte", read_only, pointName, units)
+        super(Register, self).__init__("byte", read_only, pointName, units, default_value)
         self.default_value = default_value
 
 
@@ -67,9 +67,9 @@ class Interface(BaseInterface):
 
 
     def revert_point(self,point_name):
-        for register in write_registers:
-            if point_name == register.point_name:
-                self.set_point(register.point_name,register.default_value)
+        register = self.get_register_by_name(point_name)
+        value = register.default_value
+        self.set_point(point_name,value)
 
 
     def revert_all(self):
@@ -104,6 +104,8 @@ class Interface(BaseInterface):
             point_name = regDef['Volttron Point Name']
             units = regDef['Units']
             default_value = regDef['Default']
+            print default_value
+            print units
             register = Register(
                                 read_only,
                                 point_name,

@@ -1,4 +1,4 @@
- #!/bin/bash
+
 
 rm volttron.log
 rm status.log

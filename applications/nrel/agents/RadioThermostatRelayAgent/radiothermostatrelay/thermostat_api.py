@@ -15,8 +15,8 @@
 # VOLTTRON distribution applies to this software.
 #
 # Author(s): Deepthi Vaidhynathan, National Renewable Energy Laboratory
-# Version:
-# Date:
+# Version: 0.1
+# Date: April 20, 2016
 #
 # National Renewable Energy Laboratory is a national laboratory of the
 # U.S. Department of Energy, Office of Energy Efficiency and Renewable Energy,
@@ -109,6 +109,10 @@ class FakeThermostat(object):
         }
         return self.success
 
+
+
+
+
 def Thermostat_API(url):
     ''' Chooses a Fake device or real device based on url'''
     if url == "Fake":
@@ -125,6 +129,22 @@ class ThermostatInterface(object):
 
         print "Initialized a REAL Thermostat object"
 
+    def t_setpoint(self,data,point,tmode=''):
+        ''' Sets cooling setpoint'''
+        if tmode == '':
+            msg = { point : data }
+        else :
+            msg = {"tmode": tmode, point : data}
+        value = json.dumps(msg)
+        try:
+            mode =  (urllib2.urlopen(self.urladdress,value))
+            parsed = json.loads(mode.read().decode("utf-8"))
+            return json.dumps(parsed)
+        except Exception as parsed:
+            return parsed
+
+
+
     def t_cool(self,data):
         ''' Sets cooling setpoint'''
         msg = {"tmode":2,"t_cool":data}
@@ -135,6 +155,7 @@ class ThermostatInterface(object):
             return json.dumps(parsed)
         except Exception as parsed:
             return parsed
+
 
     def t_heat(self,data):
         ''' Sets heating setpoint'''
@@ -181,7 +202,7 @@ class ThermostatInterface(object):
 
 
     def tstat(self):
-        ''' Returns current deive paramenters'''
+        ''' Returns current deicve paramenters'''
         try:
             mode =  (urllib2.urlopen(self.urladdress))
             parsed = json.loads(mode.read().decode("utf-8"))
@@ -191,9 +212,9 @@ class ThermostatInterface(object):
         except Exception as parsed:
             return parsed
 
-    def fmode_on(self):
-        ''' Turns on the fan : DEMO specific  '''
-        msg = {"fmode":2}
+    def fmode(self,data):
+        ''' Sets fan's mode'''
+        msg = {"fmode":data}
         value = json.dumps(msg)
         try:
             mode =  (urllib2.urlopen(self.urladdress,value))
@@ -214,6 +235,179 @@ class ThermostatInterface(object):
             return json.dumps(parsed)
         except Exception as parsed:
             return parsed
+
+    def energy_led(self,point,data=''):
+        '''  Controls energy led'''
+        url = self.urladdress+"/led"
+        msg = { "energy_led" :data}
+        value = json.dumps(msg)
+        try:
+            mode =  (urllib2.urlopen(url))
+            parsed = json.loads(mode.read().decode("utf-8"))
+            print json.dumps(parsed)
+            return json.dumps(parsed)
+        except Exception as parsed:
+            return parsed
+
+
+    def tswing(self,data=''):
+        '''  controls tswing value'''
+        url = self.urladdress+"/tswing"
+        if data == '':
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+        else:
+            msg = { "tswing" : data}
+            value = json.dumps(msg)
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+
+    def remote_temp(self,point='',data=''):
+        '''  monitor and control remote temp '''
+        url = self.urladdress+"/remote_temp"
+        if data == '':
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+        else:
+            msg = { point : data}
+            value = json.dumps(msg)
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+
+    def save_energy(self,point='',data=''):
+        '''  energy svaing feature'''
+        url = self.urladdress+"/save_energy"
+        if data == '':
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+        else:
+            msg = { point : data}
+            value = json.dumps(msg)
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+
+
+    def lock_mode(self,data=''):
+        '''  thermostat lock mode '''
+        url = self.urladdress+"/lock"
+        if data == '':
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+        else:
+            msg = { "lock_mode" :data}
+            value = json.dumps(msg)
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+
+    def simple_mode(self,data=''):
+        '''  thermostat simple mode '''
+        url = self.urladdress+"/simple_mode"
+        if data == '':
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+        else:
+            msg = { "simple_mode" :data}
+            value = json.dumps(msg)
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+
+
+
+    def thumidity(self,data=''):
+        '''  Thermostat thumidity vale '''
+        url = self.urladdress+"/thumidity"
+        if data == '':
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+        else:
+            msg = { "thumidity" :data}
+            value = json.dumps(msg)
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+
+    def night_light(self,data=''):
+        '''  Night light mode '''
+        url = self.urladdress+"/night_light"
+        if data == '':
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+        else:
+            msg = { "intensity" :data}
+            value = json.dumps(msg)
+            try:
+                mode =  (urllib2.urlopen(url))
+                parsed = json.loads(mode.read().decode("utf-8"))
+                print json.dumps(parsed)
+                return json.dumps(parsed)
+            except Exception as parsed:
+                return parsed
+
+
 
     def get_heat_pgm(self,day=''):
         ''' get heat program for a week or a specific day
@@ -271,13 +465,13 @@ class ThermostatInterface(object):
             for a spefic day, say 'thu'
             t.set_cool_pgm('{"3":[360, 80, 480, 80, 1080, 80, 1320 , 80]}','thu')
 
-            t.set_cool_pgm('{\
-                        "1": [360, 70, 480, 70, 1080, 70, 1320, 70],\
-                        "0": [360, 66, 480, 58, 1080, 66, 1320, 58], \
-                        "3": [360, 66, 480, 58, 1080, 66, 1320, 58],\
-                        "2": [360, 66, 480, 58, 1080, 66, 1320, 58],\
-                        "5": [360, 66, 480, 58, 1080, 66, 1320, 58],\
-                        "4": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+            t.set_cool_pgm('{
+                        "1": [360, 70, 480, 70, 1080, 70, 1320, 70],
+                        "0": [360, 66, 480, 58, 1080, 66, 1320, 58],
+                        "3": [360, 66, 480, 58, 1080, 66, 1320, 58],
+                        "2": [360, 66, 480, 58, 1080, 66, 1320, 58],
+                        "5": [360, 66, 480, 58, 1080, 66, 1320, 58],
+                        "4": [360, 66, 480, 58, 1080, 66, 1320, 58],
                         "6": [360, 66, 480, 58, 1080, 66, 1320, 58]
                  }')
         '''
@@ -303,13 +497,13 @@ class ThermostatInterface(object):
             t.set_heat_pgm('{"3":[360, 80, 480, 80, 1080, 80, 1320 , 80]}','thu')
 
             for a week
-            t.set_heat_pgm('{\
-                        "1": [360, 70, 480, 70, 1080, 70, 1320, 70],\
-                        "0": [360, 66, 480, 58, 1080, 66, 1320, 58], \
-                        "3": [360, 66, 480, 58, 1080, 66, 1320, 58],\
-                        "2": [360, 66, 480, 58, 1080, 66, 1320, 58],\
-                        "5": [360, 66, 480, 58, 1080, 66, 1320, 58],\
-                        "4": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+            t.set_heat_pgm('{
+                        "1": [360, 70, 480, 70, 1080, 70, 1320, 70],
+                        "0": [360, 66, 480, 58, 1080, 66, 1320, 58],
+                        "3": [360, 66, 480, 58, 1080, 66, 1320, 58],
+                        "2": [360, 66, 480, 58, 1080, 66, 1320, 58],
+                        "5": [360, 66, 480, 58, 1080, 66, 1320, 58],
+                        "4": [360, 66, 480, 58, 1080, 66, 1320, 58],
                         "6": [360, 66, 480, 58, 1080, 66, 1320, 58]
                  }')
         '''

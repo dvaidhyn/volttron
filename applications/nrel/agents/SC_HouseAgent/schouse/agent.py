@@ -1,3 +1,29 @@
+#
+# THIS SOFTWARE IS PROVIDED BY Alliance for Sustainable Energy, LLC ''AS IS''
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL  Alliance for Sustainable Energy, LLC
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+# THE POSSIBILITY OF SUCH DAMAGE.
+#
+# This software is an extension of VOLTTRON. The FreeBSD license of the
+# VOLTTRON distribution applies to this software.
+#
+# Author(s): Deepthi Vaidhynathan, National Renewable Energy Laboratory
+# Version: 0.1
+# Date: April 20, 2016
+#
+# National Renewable Energy Laboratory is a national laboratory of the
+# U.S. Department of Energy, Office of Energy Efficiency and Renewable Energy,
+# operated by the Alliance for Sustainable Energy, LLC
+# under Contract No. DE-AC36-08GO28308.
+#
+
 from __future__ import absolute_import
 from datetime import datetime
 import logging
@@ -33,6 +59,30 @@ class SCHouseAgent(Agent):
         self._agent_id = self.config['agentid']
         self.cea_ctl = ['emergency','normal','shed']
 
+
+
+    @Core.receiver('onstart')
+    def begining(self, sender, **kwargs):
+        '''on start'''
+        start_time = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
+        timestamp=time.strptime(start_time,"%Y-%m-%d %H:%M:%S")
+        end_time = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.mktime(timestamp) + 600))
+        msgs = [
+                    ["esif/spl/THERMOSTAT_1", #First time slot.
+                     str(start_time),     #Start of time slot.
+                     str(end_time)]   #End of time slot.
+
+                ]
+        print json.dumps(self.vip.rpc.call('platform.actuator','request_new_schedule','rpc_ctl',"007",'HIGH',msgs).get())
+        print msgs
+
+    @Core.receiver('onstop')
+    def ending(self, sender, **kwargs):
+        ''' at the end'''
+        print self.vip.rpc.call('platform.actuator','revert_point','rpc_ctl',"esif/spl/THERMOSTAT_1/tstat_cool_sp").get()
+        self.vip.rpc.call('platform.actuator','request_cancel_schedule','rpc_ctl',"007")
+# def request_cancel_schedule(self, requester_id, task_id):
+
     @PubSub.subscribe('pubsub', 'datalogger/log/volttime')
     def on_match_volttime(self, peer, sender, bus,  topic, headers, message):
         '''Subscribe to Volttime and send control signals '''
@@ -47,20 +97,26 @@ class SCHouseAgent(Agent):
                 headers_mod.DATE: now,
             }
             index = random.randint(0,2)
-            setpoint = random.uniform(75.0,80.0)
-            pub_msg={}
-            # Control Signal for the CEA2045_1  device
-            pub_msg = {'Readings':self.cea_ctl[index],'Units':'state','timestamp':{'Readings':str(self.volttime),'Units':'ts'}}
-            self.vip.pubsub.publish(
-                'pubsub', 'datalogger/log/esif/spl/set_CEA2045_1/cea2045state',headers, pub_msg)
-            print "datalogger/log/esif/spl/set_CEA2045_1/cea2045state :" + str(self.cea_ctl[index])
-
-            pub_msg={}
-            # Control Signal for the Theromostat_1 device
-            pub_msg ={'Readings':setpoint,'Units':'F','timestamp' :{'Readings':str(self.volttime),'Units':'ts'}}
-            self.vip.pubsub.publish(
-                'pubsub', 'datalogger/log/esif/spl/set_THERMOSTAT_1/tstat_cool_sp',headers, pub_msg)
+            setpoint = random.randrange(75,85,1)
+            # pub_msg={}
+            # # Control Signal for the CEA2045_1  device
+            # pub_msg = {'Readings':self.cea_ctl[index],'Units':'state','timestamp':{'Readings':str(self.volttime),'Units':'ts'}}
+            # self.vip.pubsub.publish(
+            #     'pubsub', 'datalogger/log/esif/spl/set_CEA2045_1/cea2045state',headers, pub_msg)
+            # print "datalogger/log/esif/spl/set_CEA2045_1/cea2045state :" + str(self.cea_ctl[index])
+            #
+            # pub_msg={}
+            # # Control Signal for the Theromostat_1 device
+            # pub_msg ={'Readings':setpoint,'Units':'F','timestamp' :{'Readings':str(self.volttime),'Units':'ts'}}
+            # self.vip.pubsub.publish(
+            #     'pubsub', 'datalogger/log/esif/spl/set_THERMOSTAT_1/tstat_cool_sp',headers, pub_msg)
+            # set_point(self, requester_id, topic, value, **kwargs):
             print "datalogger/log/esif/spl/set_THERMOSTAT_1/tstat_cool_sp :" + str(setpoint)
+            args = ['None']
+            print self.vip.rpc.call('platform.actuator','set_point','rpc_ctl',"esif/spl/THERMOSTAT_1/tstat_cool_sp", setpoint).get()
+            print self.vip.rpc.call('platform.actuator','get_point',"esif/spl/THERMOSTAT_1/tstat_cool_sp").get()
+
+
 
 def main(argv=sys.argv):
     '''Main method called by the eggsecutable.'''

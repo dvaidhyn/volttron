@@ -1,3 +1,31 @@
+#
+# THIS SOFTWARE IS PROVIDED BY Alliance for Sustainable Energy, LLC ''AS IS''
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL  Alliance for Sustainable Energy, LLC
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+# THE POSSIBILITY OF SUCH DAMAGE.
+#
+# This software is an extension of VOLTTRON. The FreeBSD license of the
+# VOLTTRON distribution applies to this software.
+#
+# Author(s): Deepthi Vaidhynathan, National Renewable Energy Laboratory
+# Version: 0.1
+# Date: April 20,2016
+#
+# National Renewable Energy Laboratory is a national laboratory of the
+# U.S. Department of Energy, Office of Energy Efficiency and Renewable Energy,
+# operated by the Alliance for Sustainable Energy, LLC
+# under Contract No. DE-AC36-08GO28308.
+#
+
+
+
 from __future__ import absolute_import
 import logging
 import sys
@@ -60,9 +88,16 @@ def thermostat_agent(config_path, **kwargs):
                     'tstat_fan_mode' : 'fmode',
                     'tstat_hvac_state' : 'tstate'
             }
-            self.writable_points = {'tstat_mode','tstat_cool_sp'}
-            self.units_map = {'tstat_mode' : 'state','tstat_cool_sp':'F','tstat_temp_sensor' :'F'}
-            self.point_names = {'tstat_mode','tstat_cool_sp','tstat_temp_sensor'}
+            self.units_map = {
+                    'tstat_mode' : "state",
+                    'tstat_temp_sensor' : "F",
+                    'tstat_heat_sp' : 'F',
+                    'tstat_cool_sp' : "F",
+                    'tstat_fan_mode' : 'state',
+                    'tstat_hvac_state' : 'state'
+            }
+
+
 
 
         @Core.receiver('onsetup')
@@ -101,17 +136,19 @@ def thermostat_agent(config_path, **kwargs):
             return result
 
         @RPC.export
-        def set_point(self, device, point_name, value):
+        def set_point(self, device, point_map, value):
             '''
                 Set value of a point_name on a device
             '''
-            if point_name in self.writable_points:
+            for point_name, properties in point_map.iteritems():
                 if point_name == "tstat_mode":
                     self.thermostat.mode(int(value))
                 elif point_name == "tstat_cool_sp":
-                    self.thermostat.t_cool(float(value))
-            else:
-                _log.debug("No such writable point found")
+                    self.thermostat.t_cool(value)
+                elif point_name == "tstat_heat_sp":
+                    self.thermostat.t_heat(value)
+                else:
+                    _log.debug("No such writable point found")
             return ("success")
 
         @RPC.export
@@ -128,13 +165,13 @@ def thermostat_agent(config_path, **kwargs):
             # print "subscribe to control signals"
             path,point_name = topic.rsplit('/',1)
             value = message['Readings']
-            if point_name in self.writable_points:
+
                 if point_name == "tstat_mode":
                     self.thermostat.mode(int(value))
                 elif point_name == "tstat_cool_sp":
                     self.thermostat.t_cool(float(value))
-            else:
-                _log.debug("No such writable point found")
+                else:
+                    _log.debug("No such writable point found")
 
 
         @PubSub.subscribe('pubsub', 'datalogger/log/volttime')
@@ -146,21 +183,25 @@ def thermostat_agent(config_path, **kwargs):
             str_time = message['timestamp']['Readings']
             timestamp = time.strptime(str_time, "%Y-%m-%d %H:%M:%S")
             self.volttime = message['timestamp']['Readings']
-            # if (timestamp.tm_sec % 5) == 0 and (timestamp.tm_min % 1) == 0:
-            #     headers = {
-            #         'AgentID': self._agent_id,
-            #         headers_mod.CONTENT_TYPE: headers_mod.CONTENT_TYPE.PLAIN_TEXT,
-            #         headers_mod.DATE: datetime.now().isoformat(' ') + 'Z',
-            #     }
-            #     query = {}
-            #     query = self.get_point("device1","all")
-            #     name = ""
-            #     msg = {}
-            #     for names in self.point_names:
-            #         msg.update({names  :{'Readings' : query[names], 'Units' : self.units_map[names]}})
-            #     self.vip.pubsub.publish(
-            #         'pubsub', 'datalogger/log/esif/spl/state_THERMOSTAT_1', headers, msg)
-            #     # print msg
+            if (timestamp.tm_sec % 5) == 0 and (timestamp.tm_min % 1) == 0:
+                headers = {
+                    'AgentID': self._agent_id,
+                    headers_mod.CONTENT_TYPE: headers_mod.CONTENT_TYPE.PLAIN_TEXT,
+                    headers_mod.DATE: datetime.now().isoformat(' ') + 'Z',
+                }
+                query = {}
+                query = self.thermostat.tstat()
+                # print query
+                msg = {}
+                for pub_name, query_name in self.point_name_map.iteritems():
+                    try:
+                        msg.update({pub_name: {'Readings' : query[query_name], 'Units' : self.units_map[pub_name]}})
+                        # print pub_name,query_name,msg
+                    except:
+                        msg.update({pub_name: {'Readings' : "NA", 'Units' : self.units_map[pub_name]}})
+                self.vip.pubsub.publish(
+                    'pubsub', 'datalogger/log/esif/spl/state_THERMOSTAT_1', headers, msg)
+                # print msg
 
     return ThermostatRelayAgent(identity=vip_identity, **kwargs)
 
