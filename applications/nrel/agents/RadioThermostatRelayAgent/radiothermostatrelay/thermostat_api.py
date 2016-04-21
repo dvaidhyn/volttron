@@ -214,3 +214,114 @@ class ThermostatInterface(object):
             return json.dumps(parsed)
         except Exception as parsed:
             return parsed
+
+    def get_heat_pgm(self,day=''):
+        ''' get heat program for a week or a specific day
+            day = {'mon','tue','wed','thu','fri','sat','sun'}
+
+            for a specific day, say thursday:
+            t.get_heat_pgm('thu')
+
+            for a week:
+            t.get_heat_pgm()
+
+        '''
+        if day =='':
+            url = self.urladdress+"/program/heat"
+        else:
+            url = self.urladdress+"/program/heat/"+str(day)
+        try:
+            mode =  (urllib2.urlopen(url))
+            parsed = json.loads(mode.read().decode("utf-8"))
+            print json.dumps(parsed)
+            return json.dumps(parsed)
+
+        except Exception as parsed:
+            return parsed
+
+
+    def get_cool_pgm(self,day=''):
+        ''' get cool program for a week or a specific day
+            day = {'mon','tue','wed','thu','fri','sat','sun'}
+
+            for a specific day, say thursday:
+            t.get_cool_pgm('thu')
+
+            for a week:
+            t.get_cool_pgm()
+
+        '''
+        if day =='':
+            url = self.urladdress+"/program/cool"
+        else:
+            url = self.urladdress+"/program/cool/"+str(day)
+        try:
+            mode =  (urllib2.urlopen(url))
+            parsed = json.loads(mode.read().decode("utf-8"))
+            print json.dumps(parsed)
+            return json.dumps(parsed)
+
+        except Exception as parsed:
+            return parsed
+
+    def set_cool_pgm(self,schedule,day=''):
+        ''' set cool program for a week or a specific day
+            day = {'mon','tue','wed','thu','fri','sat','sun'}
+
+            for a spefic day, say 'thu'
+            t.set_cool_pgm('{"3":[360, 80, 480, 80, 1080, 80, 1320 , 80]}','thu')
+
+            t.set_cool_pgm('{\
+                        "1": [360, 70, 480, 70, 1080, 70, 1320, 70],\
+                        "0": [360, 66, 480, 58, 1080, 66, 1320, 58], \
+                        "3": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+                        "2": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+                        "5": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+                        "4": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+                        "6": [360, 66, 480, 58, 1080, 66, 1320, 58]
+                 }')
+        '''
+        if day =='':
+            url = self.urladdress+"/program/cool"
+        else:
+            url = self.urladdress+"/program/cool/"+str(day)
+        try:
+            mode =  (urllib2.urlopen(url,schedule))
+            parsed = json.loads(mode.read().decode("utf-8"))
+            print json.dumps(parsed)
+            return json.dumps(parsed)
+
+        except Exception as parsed:
+            return parsed
+
+
+    def set_heat_pgm(self,schedule,day=''):
+        ''' set heat program for a week or a specific day
+            day = {'mon','tue','wed','thu','fri','sat','sun'}
+
+            for a spefic day, say 'thu'
+            t.set_heat_pgm('{"3":[360, 80, 480, 80, 1080, 80, 1320 , 80]}','thu')
+
+            for a week
+            t.set_heat_pgm('{\
+                        "1": [360, 70, 480, 70, 1080, 70, 1320, 70],\
+                        "0": [360, 66, 480, 58, 1080, 66, 1320, 58], \
+                        "3": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+                        "2": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+                        "5": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+                        "4": [360, 66, 480, 58, 1080, 66, 1320, 58],\
+                        "6": [360, 66, 480, 58, 1080, 66, 1320, 58]
+                 }')
+        '''
+        if day =='':
+            url = self.urladdress+"/program/heat"
+        else:
+            url = self.urladdress+"/program/heat/"+str(day)
+        try:
+            mode =  (urllib2.urlopen(url,schedule))
+            parsed = json.loads(mode.read().decode("utf-8"))
+            print json.dumps(parsed)
+            return json.dumps(parsed)
+
+        except Exception as parsed:
+            return parsed
