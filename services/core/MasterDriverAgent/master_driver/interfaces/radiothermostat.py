@@ -65,6 +65,7 @@ class Interface(BaseInterface):
         # print point_map
         result = self.vip.rpc.call('radiothermostat', 'get_point',
                                        self.target_address,point_map).get()
+        print "SCRAPED RESULT"
         print result
         return result
 
@@ -88,5 +89,4 @@ class Interface(BaseInterface):
                                 point_name,
                                 units,
                                 default_value)
-
             self.insert_register(register)

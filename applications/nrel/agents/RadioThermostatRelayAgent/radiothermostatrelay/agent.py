@@ -55,10 +55,10 @@ def thermostat_agent(config_path, **kwargs):
             self.point_name_map = {
                     'tstat_mode' : "tmode",
                     'tstat_temp_sensor' : "temp",
-                    # 'tstat_heat_sp' : 't_heat',
+                    'tstat_heat_sp' : 't_heat',
                     'tstat_cool_sp' : "t_cool",
-                    # 'tstat_fan_mode' : 'fmode',
-                    # 'tstat_hvac_state' : 'tstate'
+                    'tstat_fan_mode' : 'fmode',
+                    'tstat_hvac_state' : 'tstate'
             }
             self.writable_points = {'tstat_mode','tstat_cool_sp'}
             self.units_map = {'tstat_mode' : 'state','tstat_cool_sp':'F','tstat_temp_sensor' :'F'}
@@ -88,22 +88,16 @@ def thermostat_agent(config_path, **kwargs):
             '''
                 Get value of a point_name on a device
             '''
-
-            print point_map
-            print type(point_map)
             result = {}
             query = {}
             query = json.loads(self.thermostat.tstat())
             point_map_obj = {}
-            # point_map_obj = json.loads(point_map)
             for point_name, properties in point_map.iteritems():
-
                 try:
                     b = query[self.point_name_map[point_name]]
-                    result = {point_name : str(b) }
+                    result.update({point_name : str(b) })
                 except:
-                    print "No point"
-
+                    result.update({point_name : str("NA") })
             return result
 
         @RPC.export
