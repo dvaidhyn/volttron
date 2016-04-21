@@ -84,21 +84,26 @@ def thermostat_agent(config_path, **kwargs):
                 self.thermostat = thermostat_api.ThermostatInterface(url)
 
         @RPC.export
-        def get_point(self, device, point_name):
+        def get_point(self, device, point_map):
             '''
                 Get value of a point_name on a device
             '''
+
+            print point_map
+            print type(point_map)
             result = {}
             query = {}
             query = json.loads(self.thermostat.tstat())
-            if point_name == 'all':
-                for i in self.point_name_map:
-                    result.update({ i  :  query[self.point_name_map[i]]})
-            elif point_name in self.point_name_map:
-                b = query[self.point_name_map[point_name]]
-                result = {point_name : str(b[0]) }
-            else:
-                result.append({point_name : 'NA'})
+            point_map_obj = {}
+            # point_map_obj = json.loads(point_map)
+            for point_name, properties in point_map.iteritems():
+
+                try:
+                    b = query[self.point_name_map[point_name]]
+                    result = {point_name : str(b) }
+                except:
+                    print "No point"
+
             return result
 
         @RPC.export
@@ -147,21 +152,21 @@ def thermostat_agent(config_path, **kwargs):
             str_time = message['timestamp']['Readings']
             timestamp = time.strptime(str_time, "%Y-%m-%d %H:%M:%S")
             self.volttime = message['timestamp']['Readings']
-            if (timestamp.tm_sec % 5) == 0 and (timestamp.tm_min % 1) == 0:
-                headers = {
-                    'AgentID': self._agent_id,
-                    headers_mod.CONTENT_TYPE: headers_mod.CONTENT_TYPE.PLAIN_TEXT,
-                    headers_mod.DATE: datetime.now().isoformat(' ') + 'Z',
-                }
-                query = {}
-                query = self.get_point("device1","all")
-                name = ""
-                msg = {}
-                for names in self.point_names:
-                    msg.update({names  :{'Readings' : query[names], 'Units' : self.units_map[names]}})
-                self.vip.pubsub.publish(
-                    'pubsub', 'datalogger/log/esif/spl/state_THERMOSTAT_1', headers, msg)
-                # print msg
+            # if (timestamp.tm_sec % 5) == 0 and (timestamp.tm_min % 1) == 0:
+            #     headers = {
+            #         'AgentID': self._agent_id,
+            #         headers_mod.CONTENT_TYPE: headers_mod.CONTENT_TYPE.PLAIN_TEXT,
+            #         headers_mod.DATE: datetime.now().isoformat(' ') + 'Z',
+            #     }
+            #     query = {}
+            #     query = self.get_point("device1","all")
+            #     name = ""
+            #     msg = {}
+            #     for names in self.point_names:
+            #         msg.update({names  :{'Readings' : query[names], 'Units' : self.units_map[names]}})
+            #     self.vip.pubsub.publish(
+            #         'pubsub', 'datalogger/log/esif/spl/state_THERMOSTAT_1', headers, msg)
+            #     # print msg
 
     return ThermostatRelayAgent(identity=vip_identity, **kwargs)
 

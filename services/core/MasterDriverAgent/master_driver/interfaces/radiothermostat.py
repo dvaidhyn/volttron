@@ -7,11 +7,10 @@ from StringIO import StringIO
 import csv
 
 class Register(BaseRegister):
-    def __init__(self, instance_number, object_type, property_name, read_only, pointName, units, description = ''):
-        super(Register, self).__init__("byte", read_only, pointName, units, description = '')
-        self.instance_number = int(instance_number)
-        self.object_type = object_type
-        self.property = property_name
+    def __init__(self, read_only, pointName, units, default_value):
+        super(Register, self).__init__("byte", read_only, pointName, units)
+        self.default_value = default_value
+
 
 
 class Interface(BaseInterface):
@@ -26,9 +25,7 @@ class Interface(BaseInterface):
 
     def get_point(self, point_name):
         register = self.get_register_by_name(point_name)
-        point_map = {point_name:[register.object_type,
-                                 register.instance_number,
-                                 register.property]}
+        point_map = {point_name:[register.default_value]}
         result = self.vip.rpc.call('radiothermostat', 'get_point',
                                        self.target_address,point_name).get()
         # result_db = ast.literal_eval(result)
@@ -64,22 +61,15 @@ class Interface(BaseInterface):
         read_registers = self.get_registers_by_type("byte", True)
         write_registers = self.get_registers_by_type("byte", False)
         for register in read_registers + write_registers:
-            point_map[register.point_name] = [register.object_type,
-                                              register.instance_number,
-                                              register.property]
+            point_map[register.point_name] = [register.default_value]
         # print point_map
         result = self.vip.rpc.call('radiothermostat', 'get_point',
-                                       self.target_address,'all').get()
+                                       self.target_address,point_map).get()
         print result
         return result
 
     def ping_target(self, address):
-        #Some devices (mostly RemoteStation addresses behind routers) will not be reachable without
-        # first establishing the route to the device. Sending a directed WhoIsRequest is will
-        # settle that for us when the response comes back.
-        # result = self.vip.rpc.call('hvac', 'ping_hvac',
-        #                                self.target_address).get()
-        print "Sorry not pinging, Hardwired connection!"
+        print("ping_target not implemented in radiothermostat interface")
 
     def parse_config(self, config_string):
         if config_string is None:
@@ -88,22 +78,15 @@ class Interface(BaseInterface):
         configDict = csv.DictReader(open("/home/parallels/Desktop/dvaidhyn_pnnl/volttron/services/core/MasterDriverAgent/master_driver/thermostat_dev.csv", 'rU'))
         for regDef in configDict:
             #Skip lines that have no address yet.
-            if not regDef['Point Name']:
-                continue
-            io_type = regDef['BACnet Object Type']
+
             read_only = regDef['Writable'].lower() != 'true'
             point_name = regDef['Volttron Point Name']
-            index = int(regDef['Index'])
-            description = regDef['Notes']
             units = regDef['Units']
-            property_name = regDef['Property']
-
-            register = Register(index,
-                                io_type,
-                                property_name,
+            default_value = regDef['Default']
+            register = Register(
                                 read_only,
                                 point_name,
                                 units,
-                                description = description)
+                                default_value)
 
             self.insert_register(register)

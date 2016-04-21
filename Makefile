@@ -1,4 +1,4 @@
-all: remove API_test_radiothermostatrelay schouse_controller vtime_now actuator driver
+all: remove API_test_radiothermostatrelay schouse_controller vtime_now actuator driver listener
 
 remove:
 	rm -rf home_v/*
@@ -32,3 +32,10 @@ driver:
 		volttron-pkg package $(COM_AGENTS_HOME)/MasterDriverAgent
 		volttron-pkg configure $(VOLTTRON_HOME)/packaged/master_driveragent-0.1-py2-none-any.whl $(COM_AGENTS_HOME)/MasterDriverAgent/master-driver.agent
 		volttron-ctl install driver=$(VOLTTRON_HOME)/packaged/master_driveragent-0.1-py2-none-any.whl
+
+
+listener:
+		volttron-ctl remove --force --tag listener
+		volttron-pkg package examples/ListenerAgent
+		volttron-pkg configure $(VOLTTRON_HOME)/packaged/listeneragent-3.0-py2-none-any.whl examples/ListenerAgent/config
+		volttron-ctl install listener=$(VOLTTRON_HOME)/packaged/listeneragent-3.0-py2-none-any.whl
