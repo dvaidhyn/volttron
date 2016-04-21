@@ -1,16 +1,39 @@
+#
+# THIS SOFTWARE IS PROVIDED BY Alliance for Sustainable Energy, LLC ''AS IS''
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL  Alliance for Sustainable Energy, LLC
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+# THE POSSIBILITY OF SUCH DAMAGE.
+#
+# This software is an extension of VOLTTRON. The FreeBSD license of the
+# VOLTTRON distribution applies to this software.
+#
+# Author: Deepthi Vaidhynathan, National Renewable Energy Laboratory
+# Version:
+# Date:
+#
+# National Renewable Energy Laboratory is a national laboratory of the
+# U.S. Department of Energy, Office of Energy Efficiency and Renewable Energy,
+# operated by the Alliance for Sustainable Energy, LLC
+# under Contract No. DE-AC36-08GO28308.
+#
 
-
-from master_driver.interfaces import BaseInterface, BaseRegister, BasicRevert, DriverInterfaceError
+import csv
+from master_driver.interfaces import BaseInterface, BaseRegister, DriverInterfaceError
 from csv import DictReader
 from StringIO import StringIO
 
-import csv
 
 class Register(BaseRegister):
     def __init__(self, read_only, pointName, units, default_value):
         super(Register, self).__init__("byte", read_only, pointName, units)
         self.default_value = default_value
-
 
 
 class Interface(BaseInterface):
@@ -25,36 +48,34 @@ class Interface(BaseInterface):
 
     def get_point(self, point_name):
         register = self.get_register_by_name(point_name)
+        point_map = {}
         point_map = {point_name:[register.default_value]}
         result = self.vip.rpc.call('radiothermostat', 'get_point',
-                                       self.target_address,point_name).get()
-        # result_db = ast.literal_eval(result)
+                                       self.target_address,point_map).get()
         return str(result)
-    #
-    # def set_default(self,default):
-    #
-    #     return str(result)
+
 
     def set_point(self, point_name, value):
         register = self.get_register_by_name(point_name)
+        point_map = {}
+        point_map = {point_name:[register.default_value]}
         if register.read_only:
             raise  IOError("Trying to write to a point configured read only: "+point_name)
-        args = [self.target_address, value,
-                register.object_type,
-                register.instance_number,
-                register.property]
         result = self.vip.rpc.call('radiothermostat', 'set_point',
-                                       self.target_address,point_name,value).get()
+                                       self.target_address,point_map,value).get()
         return result
 
 
     def revert_point(self,point_name):
-        self.set_point(point_name,default_value)
+        for register in write_registers:
+            if point_name == register.point_name:
+                self.set_point(register.point_name,register.default_value)
+
 
     def revert_all(self):
         write_registers = self.get_registers_by_type("byte", False)
         for register in write_registers:
-            self.set_point(register.point_name,default_value)
+            self.set_point(register.point_name, register.default_value)
 
     def scrape_all(self):
         point_map = {}
@@ -78,9 +99,8 @@ class Interface(BaseInterface):
         f = StringIO(config_string)
         configDict = csv.DictReader(open("/home/parallels/Desktop/dvaidhyn_pnnl/volttron/services/core/MasterDriverAgent/master_driver/thermostat_dev.csv", 'rU'))
         for regDef in configDict:
-            #Skip lines that have no address yet.
 
-            read_only = regDef['Writable'].lower() != 'true'
+            read_only = regDef['Writable'] == 'FALSE'
             point_name = regDef['Volttron Point Name']
             units = regDef['Units']
             default_value = regDef['Default']
