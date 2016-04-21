@@ -143,8 +143,6 @@ class ThermostatInterface(object):
         except Exception as parsed:
             return parsed
 
-
-
     def t_cool(self,data):
         ''' Sets cooling setpoint'''
         msg = {"tmode":2,"t_cool":data}
@@ -250,49 +248,6 @@ class ThermostatInterface(object):
             return parsed
 
 
-    def tswing(self,data=''):
-        '''  controls tswing value'''
-        url = self.urladdress+"/tswing"
-        if data == '':
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-        else:
-            msg = { "tswing" : data}
-            value = json.dumps(msg)
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-
-    def remote_temp(self,point='',data=''):
-        '''  monitor and control remote temp '''
-        url = self.urladdress+"/remote_temp"
-        if data == '':
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-        else:
-            msg = { point : data}
-            value = json.dumps(msg)
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
 
     def save_energy(self,point='',data=''):
         '''  energy svaing feature'''
@@ -317,95 +272,6 @@ class ThermostatInterface(object):
                 return parsed
 
 
-    def lock_mode(self,data=''):
-        '''  thermostat lock mode '''
-        url = self.urladdress+"/lock"
-        if data == '':
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-        else:
-            msg = { "lock_mode" :data}
-            value = json.dumps(msg)
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-
-    def simple_mode(self,data=''):
-        '''  thermostat simple mode '''
-        url = self.urladdress+"/simple_mode"
-        if data == '':
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-        else:
-            msg = { "simple_mode" :data}
-            value = json.dumps(msg)
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-
-
-
-    def thumidity(self,data=''):
-        '''  Thermostat thumidity vale '''
-        url = self.urladdress+"/thumidity"
-        if data == '':
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-        else:
-            msg = { "thumidity" :data}
-            value = json.dumps(msg)
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-
-    def night_light(self,data=''):
-        '''  Night light mode '''
-        url = self.urladdress+"/night_light"
-        if data == '':
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
-        else:
-            msg = { "intensity" :data}
-            value = json.dumps(msg)
-            try:
-                mode =  (urllib2.urlopen(url))
-                parsed = json.loads(mode.read().decode("utf-8"))
-                print json.dumps(parsed)
-                return json.dumps(parsed)
-            except Exception as parsed:
-                return parsed
 
 
 
