@@ -67,7 +67,7 @@ def thermostat_agent(config_path, **kwargs):
 
     class ThermostatRelayAgent(Agent):
         '''
-            Hvac class, serves as a relay sending control
+            Thermostat class, serves as a relay sending control
             signals to the hardware
         '''
 

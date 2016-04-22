@@ -19,8 +19,8 @@ https://github.com/VOLTTRON/volttron/tree/master/applications/nrel
  VOLTTRON distribution applies to this software.
 
  Author(s): National Renewable Energy Laboratory
- Version:
- Date:
+ Version: 0.1
+ Date: April 2016
 
  National Renewable Energy Laboratory is a national laboratory of the
  U.S. Department of Energy, Office of Energy Efficiency and Renewable Energy,
@@ -60,6 +60,7 @@ The CEA-2045 standard specifies a modular communications interface (MCI) to faci
 
 **Radio Thermostat:**
 
+Implementing the most common functions.
 Radio Thermostat Company of America, Wi-Fi USNAP Module API, Version 1.3, March 22, 2012. Available on http://lowpowerlab.com/downloads/RadioThermostat_CT50_Honeywell_Wifi_API_V1.3.pdf. Retrieved on April 6, 2016.
 
 **SC_House-Agent:**

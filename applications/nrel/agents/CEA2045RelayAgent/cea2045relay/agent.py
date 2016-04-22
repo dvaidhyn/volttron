@@ -53,7 +53,9 @@ def cea_2045_agent(config_path, **kwargs):
       POINTS: timestamp [<%Y-%m-%d %H:%M:%S>] string
     Publishes:
       TOPIC:  datalogger/log/esif/spl/state_CEA2045_1
-      POINTS: cea2045state ['Running Normal','Running Curtailed Grid','Idle Grid','Idle Normal','SGD Error Condition','Running Heightened Grid'] enum
+      POINTS: cea2045state ['Running Normal','Running Curtailed Grid',
+      'Idle Grid','Idle Normal','SGD Error Condition',
+      'Running Heightened Grid'] enum
               cea2045_rate [0,3] int
               timestamp [<volttime>] float
     """
@@ -62,11 +64,15 @@ def cea_2045_agent(config_path, **kwargs):
     kwargs.pop('identity', None)
 
     class CEA2045RelayAgent(Agent):
-        '''Listens to everything and publishes a heartbeat according to the
-        heartbeat period specified in the settings module.
+        '''
+            CEA2045 class, serves as a relay sending control
+            signals to the hardware
         '''
 
         def __init__(self, **kwargs):
+            '''
+                Initialize class from config file
+            '''
             super(CEA2045RelayAgent, self).__init__(**kwargs)
             self.config = utils.load_config(config_path)
             self.volttime = None
@@ -91,6 +97,9 @@ def cea_2045_agent(config_path, **kwargs):
 
         @Core.receiver('onsetup')
         def setup(self, sender, **kwargs):
+            '''
+                Setup the class and export RPC methods
+            '''
             # Demonstrate accessing a value from the config file
             _log.info(self.config['message'])
             self._agent_id = self.config['agentid']
@@ -107,14 +116,17 @@ def cea_2045_agent(config_path, **kwargs):
 
         @Core.receiver('onstart')
         def starting(self, sender, **kwargs):
-            # print "on start"
-            #  Initialize the device
+            '''
+                Initialize the CEA-2045 device
+            '''
             self.device1.initialize(self.device_type)
 
 
         @PubSub.subscribe('pubsub', 'datalogger/log/esif/spl/set_CEA2045_1/cea2045state')
         def on_match_set(self, peer, sender, bus,  topic, headers, message):
-            # print "subscribe to ctl signal - cea_2045"
+            '''
+                Subscribe to Control signals from Supervisory controller
+            '''
             path,point_name = topic.rsplit('/',1)
             value = message['Readings']
             self.device1.send_msg(value)
@@ -128,15 +140,16 @@ def cea_2045_agent(config_path, **kwargs):
             self.device1.send_msg('link_ack')
             print mode
             if mode != None:
-                # self.device1_mode = (mode['opcode2'])
                 result_dict = {}
                 result_dict={ point_name :CEA_2045.switch_query_response(mode['opcode2'])}
-                # print result_dict
                 self.device1_mode = result_dict
 
 
         @RPC.export
         def get_point(self,device,point_name):
+            '''
+                Subscribe to Control signals from Supervisory controller
+            '''
             mode = ''
             if point_name == "cea2045state" :
                 if device == "device1":
@@ -145,11 +158,9 @@ def cea_2045_agent(config_path, **kwargs):
                     mode = self.device1.recv_msg()
                     self.device1.send_msg('link_ack')
                     if mode != None:
-                        # self.device1_mode = (mode['opcode2'])
                         result_dict = {}
                         result_dict={ point_name :CEA_2045.switch_query_response(mode['opcode2'])}
                         self.device1_mode = result_dict
-                        # print result_dict
                         return result_dict
                 else:
                     _log.exception("Device not found")
@@ -160,7 +171,6 @@ def cea_2045_agent(config_path, **kwargs):
                     mode = self.device1.recv_msg()
                     self.device1.send_msg('link_ack')
                     if mode != None:
-                        # self.device1_mode = (mode['opcode2'])
                         result_dict = {}
                         result_dict={ point_name :CEA_2045.switch_query_response(mode['opcode2'])}
                         self.device1_mode = result_dict
@@ -171,6 +181,9 @@ def cea_2045_agent(config_path, **kwargs):
 
         @RPC.export
         def set_point(self,device,point_name,value):
+            '''
+                Set value of a point_name on a device
+            '''
             if point_name == "cea2045state" :
                 if device == "device1":
                     self.device1.send_msg(value)
@@ -178,20 +191,20 @@ def cea_2045_agent(config_path, **kwargs):
                     mode = self.device1.recv_msg()
                     self.device1.send_msg('link_ack')
                     if mode != None:
-                        # self.device1_mode = (mode['opcode2'])
                         result_dict = {}
                         result_dict={ point_name :CEA_2045.switch_query_response(mode['opcode2'])}
                         self.device1_mode = result_dict
-                        # print result_dict
                         return result_dict
-
                 else:
                     _log.exception("Device not found")
             else:
                 _log.exception("Point not found")
 
         @PubSub.subscribe('pubsub', 'datalogger/log/volttime')
-        def on_match_11(self, peer, sender, bus,  topic, headers, message):
+        def on_match_all(self, peer, sender, bus,  topic, headers, message):
+            '''
+                Subscribe to volttime and synchronize
+            '''
             str_time = message['timestamp']['Readings']
             timestamp=time.strptime(str_time,"%Y-%m-%d %H:%M:%S")
             self.volttime = message['timestamp']['Readings']
@@ -215,6 +228,9 @@ def cea_2045_agent(config_path, **kwargs):
 
         @Core.periodic(60)
         def keep_connection_alive(self):
+            '''
+                Send heartbeat to keep CEA-2045 link alive
+            '''
             self.device1.send_msg('comm_status_good')
             self.device1.recv_msg()
             self.device1.recv_msg()
