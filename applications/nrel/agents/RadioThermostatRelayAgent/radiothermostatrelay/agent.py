@@ -71,7 +71,34 @@ def thermostat_agent(config_path, **kwargs):
             }
 
 
-
+            self.query_point_name = {
+                    'tstat_mode',
+                    'tstat_temp_sensor',
+                    'tstat_heat_sp',
+                    'tstat_cool_sp',
+                    'tstat_fan_mode',
+                    'tstat_hvac_state',
+                    'override',
+                    'hold'
+            }
+            self.program_name = {
+                'heat_pgm_week',
+                'heat_pgm_mon',
+                'heat_pgm_tue',
+                'heat_pgm_wed',
+                'heat_pgm_thu',
+                'heat_pgm_fri',
+                'heat_pgm_sat',
+                'heat_pgm_sun',
+                'cool_pgm_week',
+                'cool_pgm_mon',
+                'cool_pgm_tue',
+                'cool_pgm_wed',
+                'cool_pgm_thu',
+                'cool_pgm_fri',
+                'cool_pgm_sat',
+                'cool_pgm_sun'
+            }
 
         @Core.receiver('onsetup')
         def setup(self, sender, **kwargs):
@@ -98,14 +125,29 @@ def thermostat_agent(config_path, **kwargs):
             '''
             result = {}
             query = {}
-            query = json.loads(self.thermostat.tstat())
             point_map_obj = {}
             for point_name, properties in point_map.iteritems():
-                try:
-                    b = query[self.point_name_map[point_name]]
-                    result.update({point_name : str(b) })
-                except:
-                    result.update({point_name : str("NA") })
+                query = json.loads(self.thermostat.tstat())
+                if point_name in self.query_point_name:
+                    try:
+                        b = query[self.point_name_map[point_name]]
+                        result.update({point_name : str(b) })
+                    except:
+                        result.update({point_name : str("NA") })
+                else:
+                    pgm,day = point_name.rsplit('_',1)
+                    if pgm == 'heat_pgm':
+                        if day == 'week':
+                            query = self.thermostat.get_heat_pgm()
+                        else:
+                            query = self.thermostat.get_heat_pgm(day)
+                    elif pgm == 'cool_pgm':
+                        if day == 'week':
+                            query = self.thermostat.get_cool_pgm()
+                        else:
+                            query = self.thermostat.get_cool_pgm(day)
+                    result.update({point_name : str(query)})
+
             return result
 
         @RPC.export
@@ -113,16 +155,30 @@ def thermostat_agent(config_path, **kwargs):
             '''
                 Set value of a point_name on a device
             '''
+            result = {}
             for point_name, properties in point_map.iteritems():
-                if point_name == "tstat_mode":
-                    self.thermostat.mode(int(value))
+                if point_name in self.program_name:
+                    pgm,day = point_name.rsplit('_',1)
+                    if pgm == 'heat_pgm':
+                        if day == 'week':
+                            result = self.thermostat.set_heat_pgm(str(value))
+                        else:
+                            result = self.thermostat.set_heat_pgm(str(value), day)
+                    elif pgm == 'cool_pgm':
+                        if day == 'week':
+                            result = self.thermostat.set_cool_pgm(str(value))
+                        else:
+                            result = self.thermostat.set_cool_pgm(str(value), day)
+                elif point_name == "tstat_mode":
+                    result = self.thermostat.mode(int(value))
                 elif point_name == "tstat_cool_sp":
-                    self.thermostat.t_cool(value)
+                    result = self.thermostat.t_cool(value)
                 elif point_name == "tstat_heat_sp":
-                    self.thermostat.t_heat(value)
+                    result = self.thermostat.t_heat(value)
                 else:
                     _log.debug("No such writable point found")
-            return ("success")
+            return (str(result))
+
 
         @RPC.export
         def ping_thermostat(self,device):
@@ -139,12 +195,12 @@ def thermostat_agent(config_path, **kwargs):
             path,point_name = topic.rsplit('/',1)
             value = message['Readings']
 
-                if point_name == "tstat_mode":
-                    self.thermostat.mode(int(value))
-                elif point_name == "tstat_cool_sp":
-                    self.thermostat.t_cool(float(value))
-                else:
-                    _log.debug("No such writable point found")
+            if point_name == "tstat_mode":
+                self.thermostat.mode(int(value))
+            elif point_name == "tstat_cool_sp":
+                self.thermostat.t_cool(float(value))
+            else:
+                _log.debug("No such writable point found")
 
 
         @PubSub.subscribe('pubsub', 'datalogger/log/volttime')
@@ -156,25 +212,9 @@ def thermostat_agent(config_path, **kwargs):
             str_time = message['timestamp']['Readings']
             timestamp = time.strptime(str_time, "%Y-%m-%d %H:%M:%S")
             self.volttime = message['timestamp']['Readings']
-            if (timestamp.tm_sec % 5) == 0 and (timestamp.tm_min % 1) == 0:
-                headers = {
-                    'AgentID': self._agent_id,
-                    headers_mod.CONTENT_TYPE: headers_mod.CONTENT_TYPE.PLAIN_TEXT,
-                    headers_mod.DATE: datetime.now().isoformat(' ') + 'Z',
-                }
-                query = {}
-                query = self.thermostat.tstat()
-                # print query
-                msg = {}
-                for pub_name, query_name in self.point_name_map.iteritems():
-                    try:
-                        msg.update({pub_name: {'Readings' : query[query_name], 'Units' : self.units_map[pub_name]}})
-                        # print pub_name,query_name,msg
-                    except:
-                        msg.update({pub_name: {'Readings' : "NA", 'Units' : self.units_map[pub_name]}})
-                self.vip.pubsub.publish(
-                    'pubsub', 'datalogger/log/esif/spl/state_THERMOSTAT_1', headers, msg)
-                # print msg
+
+
+
 
     return ThermostatRelayAgent(identity=vip_identity, **kwargs)
 

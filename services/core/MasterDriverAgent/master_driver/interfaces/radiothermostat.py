@@ -15,8 +15,8 @@
 # VOLTTRON distribution applies to this software.
 #
 # Author: Deepthi Vaidhynathan, National Renewable Energy Laboratory
-# Version:
-# Date:
+# Version: 0.1-beta
+# Date: April 2016
 #
 # National Renewable Energy Laboratory is a national laboratory of the
 # U.S. Department of Energy, Office of Energy Efficiency and Renewable Energy,
