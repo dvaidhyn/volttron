@@ -98,23 +98,19 @@ class SCHouseAgent(Agent):
             }
             index = random.randint(0,2)
             setpoint = random.randrange(75,85,1)
-            # pub_msg={}
-            # # Control Signal for the CEA2045_1  device
-            # pub_msg = {'Readings':self.cea_ctl[index],'Units':'state','timestamp':{'Readings':str(self.volttime),'Units':'ts'}}
-            # self.vip.pubsub.publish(
-            #     'pubsub', 'datalogger/log/esif/spl/set_CEA2045_1/cea2045state',headers, pub_msg)
-            # print "datalogger/log/esif/spl/set_CEA2045_1/cea2045state :" + str(self.cea_ctl[index])
-            #
-            # pub_msg={}
-            # # Control Signal for the Theromostat_1 device
-            # pub_msg ={'Readings':setpoint,'Units':'F','timestamp' :{'Readings':str(self.volttime),'Units':'ts'}}
-            # self.vip.pubsub.publish(
-            #     'pubsub', 'datalogger/log/esif/spl/set_THERMOSTAT_1/tstat_cool_sp',headers, pub_msg)
-            # set_point(self, requester_id, topic, value, **kwargs):
-            print "datalogger/log/esif/spl/set_THERMOSTAT_1/tstat_cool_sp :" + str(setpoint)
-            args = ['None']
-            print self.vip.rpc.call('platform.actuator','set_point','rpc_ctl',"esif/spl/THERMOSTAT_1/tstat_cool_sp", setpoint).get()
-            print self.vip.rpc.call('platform.actuator','get_point',"esif/spl/THERMOSTAT_1/tstat_cool_sp").get()
+            pub_msg={}
+            # Control Signal for the CEA2045_1  device
+            pub_msg = {'Readings':self.cea_ctl[index],'Units':'state','timestamp':{'Readings':str(self.volttime),'Units':'ts'}}
+            self.vip.pubsub.publish(
+                'pubsub', 'datalogger/log/esif/spl/set_CEA2045_1/cea2045state',headers, pub_msg)
+            print "datalogger/log/esif/spl/set_CEA2045_1/cea2045state :" + str(self.cea_ctl[index])
+
+            pub_msg={}
+            # Control Signal for the Theromostat_1 device
+            pub_msg ={'Readings':setpoint,'Units':'F','timestamp' :{'Readings':str(self.volttime),'Units':'ts'}}
+            self.vip.pubsub.publish(
+                'pubsub', 'datalogger/log/esif/spl/set_THERMOSTAT_1/tstat_cool_sp',headers, pub_msg)
+        
 
 
 
