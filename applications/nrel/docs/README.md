@@ -85,21 +85,29 @@ config_api_test
 $cd agents/CEA2045RelayAgent/cea2045relay/
 $export PYTHONPATH=./:$PYTHONPATH
 $ nosetests API_test.py -v
-Test the interface read ... ok
-Test the interface write ... ok
+Test emergency command ... ok
+Test normal run ... ok
+Test shed command ... ok
+
 ----------------------------------------------------------------------
-Ran 2 tests in 0.211s
+Ran 3 tests in 0.001s
+
 OK
+
 ```
   - ***To test  the Thermostat API:***
 ```
 $cd agents/ThermostatRelayAgent/thermostatrelay/
 $export PYTHONPATH=./:$PYTHONPATH
 $ nosetests API_test.py -v
-Test the interface get ... ok
-Test the interface post ... ok
+Test  mode() interface ... ok
+Test  t_cool() interface ... ok
+Test  t_heat() interface ... ok
+Test the tstat() interface ... ok
+
 ----------------------------------------------------------------------
-Ran 2 tests in 0.001s
+Ran 4 tests in 0.001s
+
 OK
 
 ```
