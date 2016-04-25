@@ -1,1 +1,8 @@
-Volttron Point Name,Units,Writable,default,Readabletstat_mode,F,TRUE,0,TRUEtstat_temp_sensor,F,FLASE,NA,TRUEtstat_heat_sp,F,TRUE,72.TRUEtstat_cool_sp,F,TRUE,72,TRUEtstat_fan_mode,state-int,TRUE,0,TRUEtstat_hvac_state,state-int,TRUE,0,TRUEall,NA,FALSE,NA,TRUE
+Volttron Point Name,Units,Writable,default,Readable
+tstat_mode,F,TRUE,0,TRUE
+tstat_temp_sensor,F,FLASE,NA,TRUE
+tstat_heat_sp,F,TRUE,72,TRUE
+tstat_cool_sp,F,TRUE,72,TRUE
+tstat_fan_mode,state-int,TRUE,0,TRUE
+tstat_hvac_state,state-int,TRUE,0,TRUE
+all,NA,FALSE,NA,TRUE
